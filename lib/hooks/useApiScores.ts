@@ -1,14 +1,9 @@
 import { useEffect, useState } from "react";
 import fetchApiScores from "../actions/openAiApi"; // Server function
 
-type Score = {
-  category: string;
-  score: number;
-};
-
-const initialScores: Score[] = [
-  { category: "sexual", score: 0 },
+const initialScores = [
   { category: "harassment", score: 0 },
+  { category: "sexual", score: 0 },
   { category: "hate", score: 0 },
   { category: "illicit", score: 0 },
   { category: "self-harm", score: 0 },
@@ -16,7 +11,7 @@ const initialScores: Score[] = [
 ];
 
 export default function useApiScores(inputText: string) {
-  const [scores, setScores] = useState<Score[]>(initialScores); // To store the category scores
+  const [scores, setScores] = useState(initialScores); // To store the category scores
   const [flagged, setFlagged] = useState<boolean>(false); // To track if the input was flagged
 
   useEffect(() => {
