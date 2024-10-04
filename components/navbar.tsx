@@ -15,7 +15,7 @@ export default function Navbar() {
             alt="SafeScan Logo"
             width={40}
             height={40}
-            className="mr-2"
+            className="mr-2 rounded-md"
           />
           <h1 className="text-2xl font-bold">SafeScan</h1>
         </div>
