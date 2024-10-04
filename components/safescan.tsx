@@ -1,54 +1,31 @@
 "use client";
 
 import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
   ChartConfig,
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Textarea } from "@/components/ui/textarea";
-import { useEffect, useState } from "react";
-import { Bar, BarChart, XAxis, YAxis } from "recharts";
+import useRandomScores from "@/lib/hooks/useRandomScores";
+import { BarChart2, Shield } from "lucide-react";
+import { useState } from "react";
+import { Bar, BarChart, XAxis } from "recharts";
 import { useDebounce } from "use-debounce";
-import { Card, CardContent } from "./ui/card";
-
-type Score = {
-  category: string;
-  score: number;
-};
 
 export default function SafeScan() {
   const [inputText, setInputText] = useState(""); // Track user input
-  const [scores, setScores] = useState<Score[]>([]); // Track random scores
   const [debouncedInputText] = useDebounce(inputText, 1000); // Debounce input text with a 1sec delay
 
-  // Function to generate random scores
-  const generateRandomScores = () => {
-    const randomScores: Score[] = [
-      { category: "sexual", score: Math.random() },
-      { category: "sexual/minors", score: Math.random() },
-      { category: "harassment", score: Math.random() },
-      { category: "harassment/threatening", score: Math.random() },
-      { category: "hate", score: Math.random() },
-      { category: "hate/threatening", score: Math.random() },
-      { category: "illicit", score: Math.random() },
-      { category: "illicit/violent", score: Math.random() },
-      { category: "self-harm", score: Math.random() },
-      { category: "self-harm/intent", score: Math.random() },
-      { category: "self-harm/instructions", score: Math.random() },
-      { category: "violence", score: Math.random() },
-      { category: "violence/graphic", score: Math.random() },
-    ];
-
-    setScores(randomScores); // Update scores with random values
-  };
-
-  // Use useEffect to trigger random score generation after debouncing
-  useEffect(() => {
-    if (debouncedInputText) {
-      generateRandomScores(); // Generate random scores once input is debounced
-    }
-  }, [debouncedInputText]); // Effect depends on debounced input
+  // Custom scores hook
+  const scores = useRandomScores(debouncedInputText);
 
   const chartConfig = {
     score: {
@@ -58,43 +35,60 @@ export default function SafeScan() {
   } satisfies ChartConfig;
 
   return (
-    <div className="flex flex-col h-screen ">
-      {/* Navbar */}
-      <nav className="p-4">
-        <div className="container mx-auto">
+    <div className="flex flex-col min-h-screen bg-background">
+      <nav className="border-b p-4">
+        <div className="container mx-auto flex items-center">
+          <Shield className="mr-2" />
           <h1 className="text-2xl font-bold">SafeScan</h1>
         </div>
       </nav>
 
-      {/* Main Content */}
-      <main className="flex-grow container mx-auto p-4 overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-full">
-          {/* Text Input Area */}
-          <div className="flex flex-col">
-            <Textarea
-              className="flex-grow mb-4"
-              placeholder="Enter text to scan..."
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)} // Update inputText on typing
-            />
-          </div>
+      <main className="flex-grow container mx-auto p-8 mt-14">
+        <section className="mb-8 text-center">
+          <h2 className="text-3xl font-bold mb-4">
+            Protect Your Content with SafeScan
+          </h2>
+          <p className="text-xl mb-6">
+            Instantly analyze your text for potential safety concerns and
+            content policy violations.
+          </p>
+        </section>
 
-          {/* Chart Area */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
           <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Shield className="mr-2" /> Input Text
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                placeholder="Enter text to scan..."
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+              />
+            </CardContent>
+            <CardFooter className="text-sm text-muted-foreground">
+              Text will be scanned after 1 second of inactivity
+            </CardFooter>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <BarChart2 className="mr-2" /> Safety Scores
+              </CardTitle>
+            </CardHeader>
             <CardContent>
               <ChartContainer config={chartConfig}>
                 <BarChart
                   accessibilityLayer
                   data={scores}
-                  layout="vertical"
-                  margin={{
-                    left: -20,
-                  }}
+                  layout="horizontal" // Changed to horizontal
                 >
-                  <XAxis type="number" dataKey="score" domain={[0, 1]} hide />
-                  <YAxis
-                    dataKey="category"
+                  <XAxis
                     type="category"
+                    dataKey="category" // Categories on X-axis
                     tickLine={false}
                     tickMargin={10}
                     axisLine={false}
