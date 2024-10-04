@@ -3,6 +3,7 @@
 import {
   Card,
   CardContent,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
@@ -14,18 +15,18 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 import { Textarea } from "@/components/ui/textarea";
-import useRandomScores from "@/lib/hooks/useRandomScores";
+import useApiScores from "@/lib/hooks/useApiScores";
 import { BarChart2, TextSearch } from "lucide-react";
 import { useState } from "react";
-import { Bar, BarChart, XAxis } from "recharts";
+import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import { useDebounce } from "use-debounce";
 
 export default function SafeScan() {
   const [inputText, setInputText] = useState(""); // Track user input
   const [debouncedInputText] = useDebounce(inputText, 1000); // Debounce input text with a 1sec delay
 
-  // Custom scores hook
-  const scores = useRandomScores(debouncedInputText);
+  // Use the custom random scores or api scores hook
+  const { scores, flagged } = useApiScores(debouncedInputText);
 
   const chartConfig = {
     score: {
@@ -57,6 +58,7 @@ export default function SafeScan() {
               placeholder="Enter text to scan..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
+              className="h-72"
             />
           </CardContent>
           <CardFooter className="text-sm text-muted-foreground">
@@ -65,10 +67,16 @@ export default function SafeScan() {
         </Card>
 
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row justify-between items-center gap-4">
             <CardTitle className="flex items-center">
-              <BarChart2 className="mr-2" /> Safety Scores
+              <BarChart2 className="mr-2" /> Violation Scores
             </CardTitle>
+            {/* Display the flag warning */}
+            {flagged && (
+              <CardDescription>
+                ⚠️ This text was flagged as potentialy harmful.
+              </CardDescription>
+            )}
           </CardHeader>
           <CardContent>
             <ChartContainer config={chartConfig}>
@@ -77,6 +85,7 @@ export default function SafeScan() {
                 data={scores}
                 layout="horizontal" // Changed to horizontal
               >
+                <ChartTooltip content={<ChartTooltipContent />} />
                 <XAxis
                   type="category"
                   dataKey="category" // Categories on X-axis
@@ -84,8 +93,14 @@ export default function SafeScan() {
                   tickMargin={10}
                   axisLine={false}
                 />
+                <YAxis
+                  type="number"
+                  domain={[0, 1]}
+                  tickLine={false}
+                  axisLine={false}
+                  hide
+                />
                 <Bar dataKey="score" radius={5} />
-                <ChartTooltip content={<ChartTooltipContent />} />
               </BarChart>
             </ChartContainer>
           </CardContent>

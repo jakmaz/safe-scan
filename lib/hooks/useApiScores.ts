@@ -1,25 +1,39 @@
-import OpenAI from "openai";
 import { useEffect, useState } from "react";
-const openai = new OpenAI();
+import fetchApiScores from "../actions/openAiApi"; // Server function
 
 type Score = {
   category: string;
   score: number;
 };
 
+const initialScores: Score[] = [
+  { category: "sexual", score: 0 },
+  { category: "harassment", score: 0 },
+  { category: "hate", score: 0 },
+  { category: "illicit", score: 0 },
+  { category: "self-harm", score: 0 },
+  { category: "violence", score: 0 },
+];
+
 export default function useApiScores(inputText: string) {
-  const [scores, setScores] = useState<Score[]>([]);
+  const [scores, setScores] = useState<Score[]>(initialScores); // To store the category scores
+  const [flagged, setFlagged] = useState<boolean>(false); // To track if the input was flagged
 
   useEffect(() => {
     if (inputText) {
       const fetchScores = async () => {
         try {
-          const moderation = await openai.moderations.create({
-            model: "omni-moderation-latest",
-            input: inputText,
-          });
+          // Call the server function to get the moderation result
+          const result = await fetchApiScores(inputText);
 
-          console.log(moderation);
+          // Update state with the scores and flagged status
+          setScores(
+            Object.entries(result.scores).map(([category, score]) => ({
+              category,
+              score,
+            })),
+          );
+          setFlagged(result.flagged);
         } catch (error) {
           console.error("Error fetching scores:", error);
         }
@@ -29,5 +43,5 @@ export default function useApiScores(inputText: string) {
     }
   }, [inputText]);
 
-  return scores;
+  return { scores, flagged };
 }
