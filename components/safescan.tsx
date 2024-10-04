@@ -17,13 +17,21 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import useApiScores from "@/lib/hooks/useApiScores";
 import { BarChart2, TextSearch } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Bar, BarChart, XAxis, YAxis } from "recharts";
 import { useDebounce } from "use-debounce";
 
 export default function SafeScan() {
   const [inputText, setInputText] = useState(""); // Track user input
   const [debouncedInputText] = useDebounce(inputText, 1000); // Debounce input text with a 1sec delay
+  const textAreaRef = useRef<HTMLTextAreaElement | null>(null); // Type the ref as HTMLTextAreaElement
+
+  // Focus the textarea when the component mounts
+  useEffect(() => {
+    if (textAreaRef.current) {
+      textAreaRef.current.focus();
+    }
+  }, []);
 
   // Use the custom random scores or api scores hook
   const { scores, flagged } = useApiScores(debouncedInputText);
@@ -55,6 +63,7 @@ export default function SafeScan() {
           </CardHeader>
           <CardContent>
             <Textarea
+              ref={textAreaRef} // Attach the ref to the Textarea
               placeholder="Enter text to scan..."
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
@@ -74,7 +83,7 @@ export default function SafeScan() {
             {/* Display the flag warning */}
             {flagged && (
               <CardDescription>
-                ⚠️ This text was flagged as potentialy harmful.
+                ⚠ This text was flagged as potentially harmful.
               </CardDescription>
             )}
           </CardHeader>
@@ -88,7 +97,7 @@ export default function SafeScan() {
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <XAxis
                   type="category"
-                  dataKey="category" // Categories on X-axis
+                  dataKey="category"
                   tickLine={false}
                   tickMargin={10}
                   axisLine={false}

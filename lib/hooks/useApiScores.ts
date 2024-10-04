@@ -35,6 +35,10 @@ export default function useApiScores(inputText: string) {
       };
 
       fetchScores();
+    } else {
+      // Reset scores and flagged status if no inputText is provided
+      setScores(initialScores);
+      setFlagged(false);
     }
   }, [inputText]);
 
